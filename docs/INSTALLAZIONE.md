@@ -3,6 +3,10 @@
 Questa guida copre l'installazione del CRM EffeBi su un server Linux dello studio.
 Per lo sviluppo locale è sufficiente la sezione 1 e 2 con PGlite.
 
+> Per la messa online passo passo (scelta dell'host UE, PostgreSQL, systemd,
+> nginx, certificati, backup automatici e checklist di go-live) vedi
+> [`DEPLOY-UE.md`](DEPLOY-UE.md).
+
 ## 1. Prerequisiti
 
 | Componente | Versione minima | Note |

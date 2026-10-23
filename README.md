@@ -88,9 +88,11 @@ ricostruisce il dataset aggiornato alla data corrente.
 | `npm run template:xlsx` | Rigenera i template di import in `templates/` |
 | `npm run typecheck` | TypeScript su client e server |
 | `npm test` | Suite automatica (auth, condomìni, moduli, import, calcoli, dashboard, UI) |
+| `scripts/backup.sh` | Backup di database e documenti con verifica e rotazione (cron) |
 
 ## Documentazione
 
+- [`docs/DEPLOY-UE.md`](docs/DEPLOY-UE.md) — runbook completo su server Node in UE (server, PostgreSQL, HTTPS, backup, go-live)
 - [`docs/INSTALLAZIONE.md`](docs/INSTALLAZIONE.md) — installazione, primo avvio, messa in produzione
 - [`docs/CONFIGURAZIONE.md`](docs/CONFIGURAZIONE.md) — variabili d'ambiente, storage, sicurezza, MFA
 - [`docs/IMPORT.md`](docs/IMPORT.md) — formato dei file, colonne, errori, duplicati, annullamento
