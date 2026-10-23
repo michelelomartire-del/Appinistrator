@@ -1,0 +1,777 @@
+{
+    "id": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+    "codice": "DEMO-0001",
+    "denominazione": "Condominio Via delle Rose 12",
+    "comune": "Bologna",
+    "provincia": "BO",
+    "indirizzo": "Via delle Rose 12",
+    "stato": "attivo",
+    "archiviato": false,
+    "dataInizioIncarico": "2019-01-01",
+    "dataFineIncarico": null,
+    "unitaCount": 16,
+    "personeCount": 8,
+    "segnalazioniAperte": 4,
+    "prossimaAssemblea": "2026-11-05",
+    "updatedAt": "2026-10-23T15:02:54.694Z",
+    "cap": "40136",
+    "codiceFiscale": "DEMOCF00001",
+    "note": "[DEMO] Condominio dimostrativo di 12 appartamenti e 4 garage.",
+    "createdAt": "2026-10-23T15:02:54.694Z",
+    "millesimiTotali": 1000,
+    "relazioni": [
+        {
+            "id": "564583c0-31c5-4ff3-a96f-ca0b3bcfa976",
+            "persona": {
+                "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                "nome": "Marta",
+                "cognome": "Bellandi",
+                "codiceFiscale": "DEMO000000000001",
+                "email": "marta.bellandi@example.invalid",
+                "telefono": "051 555 0101",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.720Z",
+                "updatedAt": "2026-10-23T15:02:54.720Z"
+            },
+            "ruolo": "consigliere",
+            "qualifica": null,
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "94d18508-2875-4162-a3a9-37680ddb12b5",
+            "persona": {
+                "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                "nome": "Marta",
+                "cognome": "Bellandi",
+                "codiceFiscale": "DEMO000000000001",
+                "email": "marta.bellandi@example.invalid",
+                "telefono": "051 555 0101",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.720Z",
+                "updatedAt": "2026-10-23T15:02:54.720Z"
+            },
+            "ruolo": "referente",
+            "qualifica": "Riferimento per le comunicazioni",
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "2538d64d-756d-437d-abd0-736020bdeabd",
+            "persona": {
+                "id": "a734a98a-cf23-4880-8761-3b978f23fd1f",
+                "nome": "Sergio",
+                "cognome": "Bandini",
+                "codiceFiscale": "DEMO000000000020",
+                "email": "elettro.bandini@example.invalid",
+                "telefono": "051 555 0902",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.750Z",
+                "updatedAt": "2026-10-23T15:02:54.750Z"
+            },
+            "ruolo": "fornitore",
+            "qualifica": "Elettro Bandini",
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "a6a79b50-64fc-4511-9f78-fe4de7b1ca66",
+            "persona": {
+                "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                "nome": "Marta",
+                "cognome": "Bellandi",
+                "codiceFiscale": "DEMO000000000001",
+                "email": "marta.bellandi@example.invalid",
+                "telefono": "051 555 0101",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.720Z",
+                "updatedAt": "2026-10-23T15:02:54.720Z"
+            },
+            "ruolo": "condomino",
+            "qualifica": null,
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "00e7fd28-4b5c-4789-b565-43a9bbbeb361",
+            "persona": {
+                "id": "1bf197ad-32e3-4d52-83a8-0599c91bb0d6",
+                "nome": "Bruno",
+                "cognome": "Cavina",
+                "codiceFiscale": "DEMO000000000019",
+                "email": "idraulica.cavina@example.invalid",
+                "telefono": "051 555 0901",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.741Z",
+                "updatedAt": "2026-10-23T15:02:54.741Z"
+            },
+            "ruolo": "fornitore",
+            "qualifica": "Idraulica Cavina",
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "789d1b3e-7fe3-4a82-a714-ed04b17b561c",
+            "persona": {
+                "id": "888108ad-fd5c-48eb-bea5-74fdb2f46bff",
+                "nome": "Irene",
+                "cognome": "Conti",
+                "codiceFiscale": "DEMO000000000005",
+                "email": null,
+                "telefono": "051 555 0104",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.724Z",
+                "updatedAt": "2026-10-23T15:02:54.724Z"
+            },
+            "ruolo": "condomino",
+            "qualifica": null,
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "32ccef09-1a02-4f00-a22f-4f28cd4e8259",
+            "persona": {
+                "id": "32da7be3-2997-411c-a7dc-72e7507bb3bc",
+                "nome": "Giulio",
+                "cognome": "Ferraresi",
+                "codiceFiscale": "DEMO000000000002",
+                "email": "giulio.ferraresi@example.invalid",
+                "telefono": "051 555 0102",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.722Z",
+                "updatedAt": "2026-10-23T15:02:54.722Z"
+            },
+            "ruolo": "condomino",
+            "qualifica": null,
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "c9f2039b-f3c0-43ec-bbfd-ef0c5b97513c",
+            "persona": {
+                "id": "98cbc079-dbfe-4d86-9f42-bc832f0bc474",
+                "nome": "Chiara",
+                "cognome": "Nardini",
+                "codiceFiscale": "DEMO000000000003",
+                "email": "chiara.nardini@example.invalid",
+                "telefono": "051 555 0103",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.723Z",
+                "updatedAt": "2026-10-23T15:02:54.723Z"
+            },
+            "ruolo": "condomino",
+            "qualifica": null,
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "622631cb-f866-4f79-b0de-7176a2c3ada3",
+            "persona": {
+                "id": "02b4f4a3-61f5-4a37-b8af-f7ae58100cb7",
+                "nome": "Stefano",
+                "cognome": "Ruggeri",
+                "codiceFiscale": "DEMO000000000004",
+                "email": "stefano.ruggeri@example.invalid",
+                "telefono": null,
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.723Z",
+                "updatedAt": "2026-10-23T15:02:54.723Z"
+            },
+            "ruolo": "condomino",
+            "qualifica": null,
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        },
+        {
+            "id": "de840623-818c-42c0-b577-b53a65832917",
+            "persona": {
+                "id": "c1b0a61d-7b93-451a-95fd-9ddc8674578d",
+                "nome": "Giulia",
+                "cognome": "Zani",
+                "codiceFiscale": "DEMO000000000022",
+                "email": "pulizie.zani@example.invalid",
+                "telefono": "051 555 0904",
+                "note": "[DEMO] Contatto di fantasia",
+                "archiviato": false,
+                "createdAt": "2026-10-23T15:02:54.751Z",
+                "updatedAt": "2026-10-23T15:02:54.751Z"
+            },
+            "ruolo": "fornitore",
+            "qualifica": "Pulizie Zani",
+            "dataInizio": null,
+            "dataFine": null,
+            "note": null
+        }
+    ],
+    "unita": [
+        {
+            "id": "9e93da1b-ecfe-4260-8a70-9a7269ec07a3",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Garage 1",
+            "piano": "S1",
+            "categoria": "Garage",
+            "millesimi": 15.52,
+            "millesimiRiscaldamento": null,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "98b94195-6b43-489d-b3c1-b5b30db99c67",
+                    "persona": {
+                        "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                        "nome": "Marta",
+                        "cognome": "Bellandi",
+                        "codiceFiscale": "DEMO000000000001",
+                        "email": "marta.bellandi@example.invalid",
+                        "telefono": "051 555 0101",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.720Z",
+                        "updatedAt": "2026-10-23T15:02:54.720Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 15.52
+                }
+            ]
+        },
+        {
+            "id": "64158303-ff8e-4def-9a59-066037e8df24",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Garage 2",
+            "piano": "S1",
+            "categoria": "Garage",
+            "millesimi": 18.97,
+            "millesimiRiscaldamento": null,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "112281ad-b340-4d16-bbfd-8700a79dcaeb",
+                    "persona": {
+                        "id": "32da7be3-2997-411c-a7dc-72e7507bb3bc",
+                        "nome": "Giulio",
+                        "cognome": "Ferraresi",
+                        "codiceFiscale": "DEMO000000000002",
+                        "email": "giulio.ferraresi@example.invalid",
+                        "telefono": "051 555 0102",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.722Z",
+                        "updatedAt": "2026-10-23T15:02:54.722Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 18.97
+                }
+            ]
+        },
+        {
+            "id": "89178005-fcb6-4d75-ab7b-d254f7ac9c11",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Garage 3",
+            "piano": "S1",
+            "categoria": "Garage",
+            "millesimi": 12.93,
+            "millesimiRiscaldamento": null,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "ba759343-741a-4732-8278-23ad60606d59",
+                    "persona": {
+                        "id": "98cbc079-dbfe-4d86-9f42-bc832f0bc474",
+                        "nome": "Chiara",
+                        "cognome": "Nardini",
+                        "codiceFiscale": "DEMO000000000003",
+                        "email": "chiara.nardini@example.invalid",
+                        "telefono": "051 555 0103",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 12.93
+                }
+            ]
+        },
+        {
+            "id": "09912a8e-edf1-44e5-8399-3c1b05edaa95",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Garage 4",
+            "piano": "S1",
+            "categoria": "Garage",
+            "millesimi": 17.24,
+            "millesimiRiscaldamento": null,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "6544bb03-9e21-43b0-ab61-10cd4482bbe2",
+                    "persona": {
+                        "id": "02b4f4a3-61f5-4a37-b8af-f7ae58100cb7",
+                        "nome": "Stefano",
+                        "cognome": "Ruggeri",
+                        "codiceFiscale": "DEMO000000000004",
+                        "email": "stefano.ruggeri@example.invalid",
+                        "telefono": null,
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 17.24
+                }
+            ]
+        },
+        {
+            "id": "d8e22b34-c6aa-4c8f-8945-9a8115efec94",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 1",
+            "piano": "1",
+            "categoria": "Appartamento",
+            "millesimi": 79.31,
+            "millesimiRiscaldamento": 90.15,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "97104330-8c89-4e7a-8f16-7a19ef5369da",
+                    "persona": {
+                        "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                        "nome": "Marta",
+                        "cognome": "Bellandi",
+                        "codiceFiscale": "DEMO000000000001",
+                        "email": "marta.bellandi@example.invalid",
+                        "telefono": "051 555 0101",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.720Z",
+                        "updatedAt": "2026-10-23T15:02:54.720Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 79.31
+                }
+            ]
+        },
+        {
+            "id": "37d83e95-f756-4f77-a68b-326b40d590ff",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 10",
+            "piano": "3",
+            "categoria": "Appartamento",
+            "millesimi": 75.86,
+            "millesimiRiscaldamento": 74.35,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "7e600746-f9d9-48df-882d-70e46dc27da4",
+                    "persona": {
+                        "id": "888108ad-fd5c-48eb-bea5-74fdb2f46bff",
+                        "nome": "Irene",
+                        "cognome": "Conti",
+                        "codiceFiscale": "DEMO000000000005",
+                        "email": null,
+                        "telefono": "051 555 0104",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.724Z",
+                        "updatedAt": "2026-10-23T15:02:54.724Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 75.86
+                }
+            ]
+        },
+        {
+            "id": "2ca5bb8f-0aea-4f80-af0e-ab4df16a0dfa",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 11",
+            "piano": "3",
+            "categoria": "Appartamento",
+            "millesimi": 88.79,
+            "millesimiRiscaldamento": 93.87,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "5c3570e7-3fe6-47c0-a4ab-9a1dd72bffb0",
+                    "persona": {
+                        "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                        "nome": "Marta",
+                        "cognome": "Bellandi",
+                        "codiceFiscale": "DEMO000000000001",
+                        "email": "marta.bellandi@example.invalid",
+                        "telefono": "051 555 0101",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.720Z",
+                        "updatedAt": "2026-10-23T15:02:54.720Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 88.79
+                }
+            ]
+        },
+        {
+            "id": "a1f0555c-be4b-402e-be9d-c75cd1cac248",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 12",
+            "piano": "3",
+            "categoria": "Appartamento",
+            "millesimi": 68.97,
+            "millesimiRiscaldamento": 96.65,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "88ebe329-a427-4e99-aae2-3b360ec9f1a7",
+                    "persona": {
+                        "id": "32da7be3-2997-411c-a7dc-72e7507bb3bc",
+                        "nome": "Giulio",
+                        "cognome": "Ferraresi",
+                        "codiceFiscale": "DEMO000000000002",
+                        "email": "giulio.ferraresi@example.invalid",
+                        "telefono": "051 555 0102",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.722Z",
+                        "updatedAt": "2026-10-23T15:02:54.722Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 68.97
+                }
+            ]
+        },
+        {
+            "id": "207b027c-800b-4a04-89d0-19652e3df47f",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 2",
+            "piano": "1",
+            "categoria": "Appartamento",
+            "millesimi": 67.24,
+            "millesimiRiscaldamento": 82.71,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "7dd41859-37cb-4990-ad2a-f9d77dfcab6f",
+                    "persona": {
+                        "id": "32da7be3-2997-411c-a7dc-72e7507bb3bc",
+                        "nome": "Giulio",
+                        "cognome": "Ferraresi",
+                        "codiceFiscale": "DEMO000000000002",
+                        "email": "giulio.ferraresi@example.invalid",
+                        "telefono": "051 555 0102",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.722Z",
+                        "updatedAt": "2026-10-23T15:02:54.722Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 67.24
+                },
+                {
+                    "id": "03169d84-43f8-47fe-a5f3-ffd230f20107",
+                    "persona": {
+                        "id": "02b4f4a3-61f5-4a37-b8af-f7ae58100cb7",
+                        "nome": "Stefano",
+                        "cognome": "Ruggeri",
+                        "codiceFiscale": "DEMO000000000004",
+                        "email": "stefano.ruggeri@example.invalid",
+                        "telefono": null,
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "affittuario",
+                    "millesimi": null
+                }
+            ]
+        },
+        {
+            "id": "0c5eee35-418d-4ec8-8b5c-79306b0ee084",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 3",
+            "piano": "1",
+            "categoria": "Appartamento",
+            "millesimi": 87.07,
+            "millesimiRiscaldamento": 92.01,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "2af01784-2aa1-4714-95aa-e09c06228214",
+                    "persona": {
+                        "id": "98cbc079-dbfe-4d86-9f42-bc832f0bc474",
+                        "nome": "Chiara",
+                        "cognome": "Nardini",
+                        "codiceFiscale": "DEMO000000000003",
+                        "email": "chiara.nardini@example.invalid",
+                        "telefono": "051 555 0103",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 87.07
+                }
+            ]
+        },
+        {
+            "id": "f75177a7-cd95-4dba-a067-b68fe6d4ba31",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 4",
+            "piano": "1",
+            "categoria": "Appartamento",
+            "millesimi": 74.14,
+            "millesimiRiscaldamento": 72.49,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "3d7fb714-f6dd-43c0-b292-6698cfb07e92",
+                    "persona": {
+                        "id": "02b4f4a3-61f5-4a37-b8af-f7ae58100cb7",
+                        "nome": "Stefano",
+                        "cognome": "Ruggeri",
+                        "codiceFiscale": "DEMO000000000004",
+                        "email": "stefano.ruggeri@example.invalid",
+                        "telefono": null,
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 74.14
+                }
+            ]
+        },
+        {
+            "id": "2624202c-1f11-42be-ad64-ae5b92e3120f",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 5",
+            "piano": "2",
+            "categoria": "Appartamento",
+            "millesimi": 83.62,
+            "millesimiRiscaldamento": 96.66,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "f042e9f8-34f8-40a3-895f-7ec5a00e74a7",
+                    "persona": {
+                        "id": "888108ad-fd5c-48eb-bea5-74fdb2f46bff",
+                        "nome": "Irene",
+                        "cognome": "Conti",
+                        "codiceFiscale": "DEMO000000000005",
+                        "email": null,
+                        "telefono": "051 555 0104",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.724Z",
+                        "updatedAt": "2026-10-23T15:02:54.724Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 83.62
+                }
+            ]
+        },
+        {
+            "id": "1a16f85a-72d1-4e1d-932b-2d87b8c880f0",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 6",
+            "piano": "2",
+            "categoria": "Appartamento",
+            "millesimi": 71.55,
+            "millesimiRiscaldamento": 76.21,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "2fc47003-bdb2-457d-a92d-247ad725877d",
+                    "persona": {
+                        "id": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+                        "nome": "Marta",
+                        "cognome": "Bellandi",
+                        "codiceFiscale": "DEMO000000000001",
+                        "email": "marta.bellandi@example.invalid",
+                        "telefono": "051 555 0101",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.720Z",
+                        "updatedAt": "2026-10-23T15:02:54.720Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 71.55
+                }
+            ]
+        },
+        {
+            "id": "06705b00-bdd2-460f-99fa-6605f031790a",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 7",
+            "piano": "2",
+            "categoria": "Appartamento",
+            "millesimi": 93.1,
+            "millesimiRiscaldamento": 70.63,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "23ae8825-0503-4f14-9a9e-d6bddcabb078",
+                    "persona": {
+                        "id": "32da7be3-2997-411c-a7dc-72e7507bb3bc",
+                        "nome": "Giulio",
+                        "cognome": "Ferraresi",
+                        "codiceFiscale": "DEMO000000000002",
+                        "email": "giulio.ferraresi@example.invalid",
+                        "telefono": "051 555 0102",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.722Z",
+                        "updatedAt": "2026-10-23T15:02:54.722Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 93.1
+                }
+            ]
+        },
+        {
+            "id": "9664f212-71f4-4abc-b2cd-c00a82b38ad2",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 8",
+            "piano": "2",
+            "categoria": "Appartamento",
+            "millesimi": 63.79,
+            "millesimiRiscaldamento": 85.5,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "875407d4-c30f-4951-aa94-f478a8ed5ad8",
+                    "persona": {
+                        "id": "98cbc079-dbfe-4d86-9f42-bc832f0bc474",
+                        "nome": "Chiara",
+                        "cognome": "Nardini",
+                        "codiceFiscale": "DEMO000000000003",
+                        "email": "chiara.nardini@example.invalid",
+                        "telefono": "051 555 0103",
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 63.79
+                }
+            ]
+        },
+        {
+            "id": "e749de63-c7a4-4285-8c1f-f5ba3c10ccc3",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "identificativo": "Int. 9",
+            "piano": "3",
+            "categoria": "Appartamento",
+            "millesimi": 81.9,
+            "millesimiRiscaldamento": 68.77,
+            "note": "[DEMO] Unit\u00e0 dimostrativa",
+            "archiviato": false,
+            "persone": [
+                {
+                    "id": "75e9071b-1d91-4223-837d-48c889d17179",
+                    "persona": {
+                        "id": "02b4f4a3-61f5-4a37-b8af-f7ae58100cb7",
+                        "nome": "Stefano",
+                        "cognome": "Ruggeri",
+                        "codiceFiscale": "DEMO000000000004",
+                        "email": "stefano.ruggeri@example.invalid",
+                        "telefono": null,
+                        "note": "[DEMO] Contatto di fantasia",
+                        "archiviato": false,
+                        "createdAt": "2026-10-23T15:02:54.723Z",
+                        "updatedAt": "2026-10-23T15:02:54.723Z"
+                    },
+                    "titolo": "proprietario",
+                    "millesimi": 81.9
+                }
+            ]
+        }
+    ],
+    "attivita": [
+        {
+            "id": "202cc4d6-421f-433a-9e28-1e07dbba1b24",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "personaId": "f5cb34ea-8d6b-4b37-b4fa-d4d59381d778",
+            "tipo": "telefonata",
+            "titolo": "Richiamare la consigliera sul preventivo",
+            "descrizione": "Chiarire i due punti sospesi prima dell\u2019assemblea di novembre.",
+            "data": "2026-10-22",
+            "scadenza": "2026-10-25",
+            "completata": false,
+            "priorita": "alta",
+            "createdAt": "2026-10-22T15:02:54.959Z"
+        },
+        {
+            "id": "942cd8e0-c7de-448a-81ce-8915b1150985",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "personaId": null,
+            "tipo": "nota",
+            "titolo": "Verificare le letture dei contatori dell\u2019acqua",
+            "descrizione": "Confronto fra lettura del fornitore e contatore condominiale.",
+            "data": "2026-10-20",
+            "scadenza": "2026-10-22",
+            "completata": false,
+            "priorita": "alta",
+            "createdAt": "2026-10-20T15:02:54.964Z"
+        },
+        {
+            "id": "2d0e9306-793c-4b5f-9925-215f9d8b8bbd",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "personaId": null,
+            "tipo": "promemoria",
+            "titolo": "Rinnovo della polizza assicurativa",
+            "descrizione": "Verificare massimali e scadenza prima del rinnovo.",
+            "data": "2026-10-18",
+            "scadenza": "2026-11-10",
+            "completata": false,
+            "priorita": "normale",
+            "createdAt": "2026-10-18T15:02:54.963Z"
+        },
+        {
+            "id": "41db70b5-7f1c-48ed-9a65-99d4ed537f4d",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "personaId": null,
+            "tipo": "email",
+            "titolo": "Inviare il verbale dell\u2019ultima assemblea",
+            "descrizione": "Trasmissione del verbale approvato ai cond\u00f2mini.",
+            "data": "2026-10-15",
+            "scadenza": null,
+            "completata": true,
+            "priorita": "normale",
+            "createdAt": "2026-10-15T15:02:54.962Z"
+        }
+    ]
+}

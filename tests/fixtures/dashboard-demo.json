@@ -1,0 +1,267 @@
+{
+    "kpis": [
+        {
+            "id": "condomini_attivi",
+            "label": "Condomini attivi",
+            "value": 5,
+            "unit": "count",
+            "href": "/condomini?stato=attivo",
+            "hint": "Rapporti con stato \u201cAttivo\u201d non archiviati",
+            "explanation": "Conteggio dei condomini con stato \u201cAttivo\u201d e non archiviati.",
+            "available": true
+        },
+        {
+            "id": "segnalazioni_aperte",
+            "label": "Segnalazioni aperte",
+            "value": 13,
+            "unit": "count",
+            "href": "/segnalazioni?stato=aperte",
+            "hint": "Nuove, in valutazione, assegnate e in corso",
+            "explanation": "Somma delle segnalazioni negli stati Nuova, In valutazione, Assegnata e In corso.",
+            "available": true
+        },
+        {
+            "id": "segnalazioni_scadute",
+            "label": "Segnalazioni scadute",
+            "value": 2,
+            "unit": "count",
+            "href": "/segnalazioni?scadute=true",
+            "hint": "Scadenza superata e non ancora risolte",
+            "explanation": "Segnalazioni con scadenza precedente a oggi e stato diverso da Risolta o Chiusa.",
+            "available": true
+        },
+        {
+            "id": "prossime_assemblee",
+            "label": "Prossime assemblee",
+            "value": 4,
+            "unit": "count",
+            "href": "/assemblee?prossime=true",
+            "hint": "Programmate o convocate da oggi",
+            "explanation": "Assemblee con data odierna o futura e stato Programmata o Convocata.",
+            "available": true
+        },
+        {
+            "id": "percentuale_incassata",
+            "label": "Rate incassate",
+            "value": 67.2,
+            "unit": "percent",
+            "href": "/rendiconti",
+            "hint": "Incassato su totale rate registrate",
+            "explanation": "Percentuale = pagamenti registrati \u00f7 totale delle rate registrate. Considera solo rate presenti nel CRM, non l\u2019intero bilancio.",
+            "available": true,
+            "unavailableReason": "Il totale delle rate \u00e8 zero: la percentuale non \u00e8 calcolabile."
+        },
+        {
+            "id": "residuo_scaduto",
+            "label": "Residuo scaduto",
+            "value": 5894.78,
+            "unit": "euro",
+            "href": "/rendiconti?scadute=true",
+            "hint": "12 rate con residuo",
+            "explanation": "Somma dei residui (importo rata \u2212 pagamenti) delle rate con scadenza superata.",
+            "available": true,
+            "unavailableReason": "Nessuna rata scaduta con residuo aperto."
+        },
+        {
+            "id": "confronti_consumi",
+            "label": "Consumi confrontabili",
+            "value": 18,
+            "unit": "count",
+            "href": "/consumi",
+            "hint": "Periodi omogenei con confronto valido",
+            "explanation": "Numero di letture che hanno un periodo precedente omogeneo (stessa categoria e unit\u00e0 di misura, durata simile, non stimato).",
+            "available": true,
+            "unavailableReason": "Nessuna coppia di periodi omogenei: il confronto non \u00e8 mostrato."
+        }
+    ],
+    "condominiPerStato": [
+        {
+            "stato": "potenziale",
+            "count": 1
+        },
+        {
+            "stato": "attivo",
+            "count": 5
+        }
+    ],
+    "segnalazioniPerStato": [
+        {
+            "stato": "in_corso",
+            "count": 3
+        },
+        {
+            "stato": "chiusa",
+            "count": 1
+        },
+        {
+            "stato": "in_valutazione",
+            "count": 3
+        },
+        {
+            "stato": "nuova",
+            "count": 4
+        },
+        {
+            "stato": "risolta",
+            "count": 2
+        },
+        {
+            "stato": "assegnata",
+            "count": 3
+        }
+    ],
+    "prossimeAssemblee": [
+        {
+            "id": "8e814e0d-7d46-468b-bdbe-b555091bed3f",
+            "condominioId": "656d1401-ece2-4268-991c-08e2af4e6e0e",
+            "condominio": "Residenza I Gelsi",
+            "data": "2026-10-29",
+            "ora": "18:15",
+            "tipo": "ordinaria",
+            "stato": "convocata",
+            "punti": 3
+        },
+        {
+            "id": "2f55ff50-7516-4a79-a950-1e14da07eb8d",
+            "condominioId": "d72f7377-4ef5-4975-8be4-74b0ce3635e3",
+            "condominio": "Condominio Via delle Rose 12",
+            "data": "2026-11-05",
+            "ora": "18:30",
+            "tipo": "ordinaria",
+            "stato": "convocata",
+            "punti": 3
+        },
+        {
+            "id": "66612fe2-94d4-46c9-8a25-1df1cd8b0a31",
+            "condominioId": "43ad2b61-20ec-47b1-9919-3371c81a4b0e",
+            "condominio": "Condominio Via del Porto 30",
+            "data": "2026-11-18",
+            "ora": "18:00",
+            "tipo": "straordinaria",
+            "stato": "convocata",
+            "punti": 2
+        },
+        {
+            "id": "27f5ef9f-1284-4a2e-a7ab-ffb732ed58f2",
+            "condominioId": "d0447fcb-a83e-4b83-9b08-45dc863e8d5d",
+            "condominio": "Condominio Via Giuseppe Verdi 8",
+            "data": "2026-12-03",
+            "ora": "17:45",
+            "tipo": "ordinaria",
+            "stato": "programmata",
+            "punti": 3
+        }
+    ],
+    "segnalazioniScadute": [
+        {
+            "id": "112a6504-106f-4b39-af1f-ff182cde9391",
+            "codice": "SG-DEMO-001",
+            "titolo": "Infiltrazione dal terrazzo nell\u2019appartamento 4",
+            "condominio": "Condominio Via delle Rose 12",
+            "scadenza": "2026-10-19",
+            "stato": "in_corso"
+        },
+        {
+            "id": "e331d902-337f-4271-a544-dd97ab326e85",
+            "codice": "SG-DEMO-007",
+            "titolo": "Pulizia del cortile non eseguita",
+            "condominio": "Condominio Via Giuseppe Verdi 8",
+            "scadenza": "2026-10-22",
+            "stato": "assegnata"
+        }
+    ],
+    "scadenzeRate": [
+        {
+            "id": "f2387d60-9af3-4c44-8a63-462d1e238927",
+            "descrizione": "Rata 1 \u2013 esercizio 2025",
+            "condominio": "Condominio Via Giuseppe Verdi 8",
+            "scadenza": "2025-06-30",
+            "importo": 568.58,
+            "incassato": 227.43,
+            "residuo": 341.15
+        },
+        {
+            "id": "a1beb73b-bdee-4071-a25c-b3ac27271772",
+            "descrizione": "Rata 1 \u2013 esercizio 2025",
+            "condominio": "Condominio Via delle Rose 12",
+            "scadenza": "2025-06-30",
+            "importo": 523.73,
+            "incassato": 0,
+            "residuo": 523.73
+        },
+        {
+            "id": "a4fca66a-d691-4a36-a7bc-5be953ffa594",
+            "descrizione": "Rata 1 \u2013 esercizio 2025",
+            "condominio": "Condominio Via delle Rose 12",
+            "scadenza": "2025-06-30",
+            "importo": 560,
+            "incassato": 224,
+            "residuo": 336
+        },
+        {
+            "id": "b475c0b3-7312-45cf-9cb2-f8adb7a3ce5f",
+            "descrizione": "Rata 2 \u2013 esercizio 2025",
+            "condominio": "Condominio Piazza Re Enzo 5",
+            "scadenza": "2025-12-31",
+            "importo": 555.45,
+            "incassato": 0,
+            "residuo": 555.45
+        },
+        {
+            "id": "c21924e9-92a4-4027-bcde-3b77b053b422",
+            "descrizione": "Rata 2 \u2013 esercizio 2025",
+            "condominio": "Condominio Via delle Rose 12",
+            "scadenza": "2025-12-31",
+            "importo": 523.73,
+            "incassato": 0,
+            "residuo": 523.73
+        },
+        {
+            "id": "31cd308e-20a6-4f10-87f1-9b17ed3dd1f0",
+            "descrizione": "Rata 2 \u2013 esercizio 2025",
+            "condominio": "Condominio Via Giuseppe Verdi 8",
+            "scadenza": "2025-12-31",
+            "importo": 568.58,
+            "incassato": 0,
+            "residuo": 568.58
+        },
+        {
+            "id": "ddf9d864-d35a-4900-96f1-7aa121671325",
+            "descrizione": "Rata 2 \u2013 esercizio 2025",
+            "condominio": "Condominio Via delle Rose 12",
+            "scadenza": "2025-12-31",
+            "importo": 560,
+            "incassato": 0,
+            "residuo": 560
+        },
+        {
+            "id": "7398a13a-ea2d-4f70-b9e5-89b2f5147136",
+            "descrizione": "Rata 1 \u2013 esercizio 2026",
+            "condominio": "Residenza I Gelsi",
+            "scadenza": "2026-04-30",
+            "importo": 660.36,
+            "incassato": 0,
+            "residuo": 660.36
+        },
+        {
+            "id": "64c1e9e2-a198-4672-a5e3-98539f42be85",
+            "descrizione": "Rata 1 \u2013 esercizio 2026",
+            "condominio": "Residenza I Gelsi",
+            "scadenza": "2026-04-30",
+            "importo": 803.51,
+            "incassato": 321.4,
+            "residuo": 482.11
+        },
+        {
+            "id": "e12d5089-c154-40a2-9280-2f4d2f9798f8",
+            "descrizione": "Rata 1 \u2013 esercizio 2026",
+            "condominio": "Condominio Via delle Rose 12",
+            "scadenza": "2026-05-31",
+            "importo": 458.58,
+            "incassato": 183.43,
+            "residuo": 275.15
+        }
+    ],
+    "datiInsufficienti": [],
+    "oggi": "2026-10-23"
+}
