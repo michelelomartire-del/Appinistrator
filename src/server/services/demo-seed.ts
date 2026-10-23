@@ -1,514 +1,780 @@
-import { getDb, uuid, type Db } from "../db.js";
-import { hashPassword } from "../security.js";
+import ExcelJS from "exceljs";
 import { config } from "../config.js";
+import { getDb, uuid, type Db } from "../db.js";
+import { hashPassword, sha256 } from "../security.js";
+import { storage } from "./storage.js";
+import {
+  DEMO_MARKER,
+  buildDemoDataset,
+  euro,
+  isoDate,
+  unitaDelCondominio,
+  type DemoDocumento,
+} from "./demo-data.js";
 
 /**
- * Seed dimostrativo: TUTTI i dati sono fittizi e marcati DEMO.
- * Non usare questo file per dati reali. Le anagrafiche usano nomi di fantasia.
+ * Seed dimostrativo.
+ *
+ * TUTTI i dati sono inventati e marcati DEMO: nomi, indirizzi, importi, pratiche,
+ * documenti e registro importazioni. Non usare questo file per dati reali.
+ * Il seed è rifiutato in produzione e azzera soltanto i record demo, mai altro.
  */
-export const DEMO_MARKER = "[DEMO]";
 
-export async function resetDemoData(db: Db = getDb()): Promise<void> {
-  // I condomini DEMO sono identificati dal marcatore nelle note.
-  await db.query(
-    `delete from condomini where note like $1 or codice like 'DEMO-%'`,
+export { DEMO_MARKER };
+
+/* ------------------------------------------------------------------------- */
+/* Generatori di file dimostrativi                                           */
+/* ------------------------------------------------------------------------- */
+
+/** Riduce il testo a caratteri ASCII stampabili (i PDF usano la codifica WinAnsi). */
+function soloAscii(value: string): string {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\x20-\x7e]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function escapePdf(value: string): string {
+  return soloAscii(value)
+    .replace(/\\/g, "\\\\")
+    .replace(/\(/g, "\\(")
+    .replace(/\)/g, "\\)");
+}
+
+/** PDF minimale ma valido: una pagina A4 con testo. Nessuna libreria esterna. */
+function buildPdf(titolo: string, righe: string[]): Buffer {
+  const righeImpaginate: string[] = [titolo.toUpperCase(), ""];
+  for (const riga of righe) {
+    const testo = soloAscii(riga);
+    if (testo === "") {
+      righeImpaginate.push("");
+      continue;
+    }
+    for (let i = 0; i < testo.length; i += 92) {
+      righeImpaginate.push(testo.slice(i, i + 92));
+    }
+  }
+  const visibili = righeImpaginate.slice(0, 52);
+  let stream = "BT\n/F1 11 Tf\n14 TL\n56 790 Td\n";
+  visibili.forEach((riga, indice) => {
+    if (indice > 0) stream += "T*\n";
+    stream += `(${escapePdf(riga)}) Tj\n`;
+  });
+  stream += "ET";
+
+  const oggetti = [
+    "<</Type/Catalog/Pages 2 0 R>>",
+    "<</Type/Pages/Kids[3 0 R]/Count 1>>",
+    "<</Type/Page/Parent 2 0 R/MediaBox[0 0 595 842]/Resources<</Font<</F1 5 0 R>>>>/Contents 4 0 R>>",
+    `<</Length ${Buffer.byteLength(stream, "latin1")}>>\nstream\n${stream}\nendstream`,
+    "<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>",
+  ];
+
+  let out = "%PDF-1.4\n";
+  const offsets: number[] = [];
+  oggetti.forEach((body, indice) => {
+    offsets.push(Buffer.byteLength(out, "latin1"));
+    out += `${indice + 1} 0 obj\n${body}\nendobj\n`;
+  });
+  const xrefOffset = Buffer.byteLength(out, "latin1");
+  out += `xref\n0 ${oggetti.length + 1}\n0000000000 65535 f \n`;
+  for (const offset of offsets) {
+    out += `${String(offset).padStart(10, "0")} 00000 n \n`;
+  }
+  out += `trailer\n<</Size ${oggetti.length + 1}/Root 1 0 R>>\nstartxref\n${xrefOffset}\n%%EOF\n`;
+  return Buffer.from(out, "latin1");
+}
+
+function buildCsv(righe: string[]): Buffer {
+  return Buffer.from(`\uFEFF${righe.join("\r\n")}\r\n`, "utf8");
+}
+
+async function buildXlsx(documento: DemoDocumento): Promise<Buffer> {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = "CRM EffeBi (dimostrativo)";
+  const sheet = workbook.addWorksheet("Dati");
+  const titolo = sheet.addRow([documento.titolo]);
+  titolo.font = { bold: true, size: 13 };
+  sheet.addRow([]);
+  const tabella = documento.tabella ?? { intestazioni: [], righe: [] };
+  const intestazioni = sheet.addRow(tabella.intestazioni);
+  intestazioni.font = { bold: true };
+  intestazioni.eachCell((cell) => {
+    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FFE8EEF5" } };
+  });
+  for (const riga of tabella.righe) sheet.addRow(riga);
+  sheet.addRow([]);
+  sheet.addRow([`${DEMO_MARKER} Documento dimostrativo: dati inventati, nessun valore contabile.`]);
+  sheet.getColumn(1).width = 34;
+  sheet.getColumn(2).width = 22;
+  sheet.getColumn(3).width = 46;
+  const buffer = await workbook.xlsx.writeBuffer();
+  return Buffer.from(buffer as ArrayBuffer);
+}
+
+function nomeSicuro(nome: string, estensione: string): string {
+  const base = soloAscii(nome.replace(/\.[a-z0-9]+$/i, ""))
+    .replace(/[^a-zA-Z0-9]+/g, "_")
+    .replace(/^_|_$/g, "")
+    .slice(0, 80);
+  return `${base || "documento"}.${estensione}`;
+}
+
+function giornoRelativo(base: Date, offset: number): string {
+  const data = new Date(base.getFullYear(), base.getMonth(), base.getDate());
+  data.setDate(data.getDate() + offset);
+  return isoDate(data);
+}
+
+function dataPagamento(scadenza: string, oggi: string): string {
+  const dataScadenza = new Date(`${scadenza}T00:00:00`);
+  dataScadenza.setDate(dataScadenza.getDate() - 4);
+  const dataOggi = new Date(`${oggi}T00:00:00`);
+  if (dataScadenza > dataOggi) {
+    dataOggi.setDate(dataOggi.getDate() - 3);
+    return isoDate(dataOggi);
+  }
+  return isoDate(dataScadenza);
+}
+
+/* ------------------------------------------------------------------------- */
+/* Reset dei soli dati dimostrativi                                          */
+/* ------------------------------------------------------------------------- */
+
+export async function resetDemoData(db: Db = getDb()): Promise<number> {
+  const documenti = await db.query<{ storage_key: string }>(
+    `select d.storage_key
+       from documenti d
+       left join condomini c on c.id = d.condominio_id
+      where c.codice like 'DEMO-%'
+         or c.note like $1
+         or d.descrizione like $1
+         or d.nome_file like 'demo%'`,
     [`%${DEMO_MARKER}%`],
   );
-  await db.query(`delete from persone where note like $1`, [
+  let fileRimossi = 0;
+  for (const documento of documenti) {
+    try {
+      await storage.delete(documento.storage_key);
+      fileRimossi += 1;
+    } catch {
+      // Un file già assente non deve interrompere il ripristino della demo.
+    }
+  }
+
+  await db.query(`delete from condomini where codice like 'DEMO-%' or note like $1`, [
     `%${DEMO_MARKER}%`,
   ]);
-  await db.query(`delete from consumi where note like $1`, [
-    `%${DEMO_MARKER}%`,
-  ]);
+  await db.query(`delete from persone where note like $1`, [`%${DEMO_MARKER}%`]);
+  await db.query(`delete from consumi where note like $1`, [`%${DEMO_MARKER}%`]);
   await db.query(`delete from import_batches where nome_file like 'demo%'`);
+  await db.query(`delete from audit_log where descrizione like $1`, [
+    `%${DEMO_MARKER}%`,
+  ]);
+  return fileRimossi;
 }
+
+/* ------------------------------------------------------------------------- */
+/* Seed                                                                      */
+/* ------------------------------------------------------------------------- */
+
+export type SeedResult = {
+  userId: string;
+  email: string;
+  password: string;
+  conteggi: Record<string, number>;
+  documenti: number;
+};
 
 export async function seedDemo(
   db: Db = getDb(),
-): Promise<{ userId: string; email: string }> {
+  now: Date = new Date(),
+): Promise<SeedResult> {
+  if (config.isProduction) {
+    throw new Error(
+      "Il seed demo non può essere eseguito con NODE_ENV=production.",
+    );
+  }
+
   await resetDemoData(db);
 
+  const dataset = buildDemoDataset(now);
+  const oggi = isoDate(now);
+
   const email = config.demoAdmin.email;
+  const password = config.demoAdmin.password;
   const existing = await db.query<{ id: string }>(
     "select id from users where lower(email) = lower($1)",
     [email],
   );
   let userId = existing[0]?.id;
+  const passwordHash = await hashPassword(password);
   if (!userId) {
     userId = uuid();
     await db.query(
       `insert into users (id, email, nome, cognome, password_hash, ruolo, must_change_password)
        values ($1,$2,$3,$4,$5,'amministratore',false)`,
-      [
-        userId,
-        email,
-        "Francesca",
-        "Demo",
-        await hashPassword(config.demoAdmin.password),
-      ],
+      [userId, email, "Francesca", "Demo", passwordHash],
     );
-  }
-
-  const demoNotes = `${DEMO_MARKER} Dati sintetici generati per la demo. Nessun dato reale.`;
-
-  const condomini = [
-    {
-      id: uuid(),
-      codice: "DEMO-0001",
-      denominazione: "Condominio Demo Via delle Rose 12",
-      indirizzo: "Via delle Rose 12",
-      cap: "40100",
-      comune: "Bologna",
-      provincia: "BO",
-      stato: "attivo",
-      inizio: "2022-01-01",
-    },
-    {
-      id: uuid(),
-      codice: "DEMO-0002",
-      denominazione: "Condominio Demo Via Verdi 8",
-      indirizzo: "Via Verdi 8",
-      cap: "40100",
-      comune: "Bologna",
-      provincia: "BO",
-      stato: "attivo",
-      inizio: "2023-04-01",
-    },
-    {
-      id: uuid(),
-      codice: "DEMO-0003",
-      denominazione: "Condominio Demo Piazza Esempio 3",
-      indirizzo: "Piazza Esempio 3",
-      cap: "41100",
-      comune: "Modena",
-      provincia: "MO",
-      stato: "potenziale",
-      inizio: null,
-    },
-  ];
-
-  for (const c of condomini) {
+  } else {
     await db.query(
-      `insert into condomini (id, codice, denominazione, indirizzo, cap, comune, provincia, stato, data_inizio_incarico, note, created_by)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+      `update users set nome = 'Francesca', cognome = 'Demo', password_hash = $2,
+         attivo = true, must_change_password = false, failed_attempts = 0,
+         locked_until = null, updated_at = now()
+       where id = $1`,
+      [userId, passwordHash],
+    );
+    await db.query("delete from sessions where user_id = $1", [userId]);
+  }
+
+  const condominioId = new Map<string, string>();
+  const personaId = new Map<string, string>();
+  const unitaId = new Map<string, string>();
+  const segnalazioneId = new Map<string, string>();
+  const assembleaId = new Map<string, string>();
+  const periodoId = new Map<string, string>();
+
+  // --- Condomini -----------------------------------------------------------
+  for (const condominio of dataset.condomini) {
+    const id = uuid();
+    condominioId.set(condominio.key, id);
+    await db.query(
+      `insert into condomini (id, codice, denominazione, indirizzo, cap, comune, provincia,
+         codice_fiscale, stato, data_inizio_incarico, data_fine_incarico, note, created_by)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [
-        c.id,
-        c.codice,
-        c.denominazione,
-        c.indirizzo,
-        c.cap,
-        c.comune,
-        c.provincia,
-        c.stato,
-        c.inizio,
-        demoNotes,
+        id,
+        condominio.codice,
+        condominio.denominazione,
+        condominio.indirizzo,
+        condominio.cap,
+        condominio.comune,
+        condominio.provincia,
+        condominio.codiceFiscale,
+        condominio.stato,
+        condominio.dataInizioIncarico,
+        condominio.dataFineIncarico,
+        condominio.note,
         userId,
       ],
     );
   }
 
-  const [demo1, demo2] = condomini;
-
-  const persone = [
-    {
-      id: uuid(),
-      nome: "Mario",
-      cognome: "Rossi Demo",
-      email: "mario.rossi@example.invalid",
-      cf: "RSSMRA00A01A944X",
-      tel: "051 0000001",
-    },
-    {
-      id: uuid(),
-      nome: "Lucia",
-      cognome: "Bianchi Demo",
-      email: "lucia.bianchi@example.invalid",
-      cf: "BNCLCU00B02A944Y",
-      tel: "051 0000002",
-    },
-    {
-      id: uuid(),
-      nome: "Anna",
-      cognome: "Verdi Demo",
-      email: "anna.verdi@example.invalid",
-      cf: null,
-      tel: "051 0000003",
-    },
-    {
-      id: uuid(),
-      nome: "Paolo",
-      cognome: "Neri Demo",
-      email: "paolo.neri@example.invalid",
-      cf: null,
-      tel: "051 0000004",
-    },
-    {
-      id: uuid(),
-      nome: "Sara",
-      cognome: "Gialli Demo",
-      email: null,
-      cf: null,
-      tel: "051 0000005",
-    },
-  ];
-
-  for (const p of persone) {
+  // --- Persone -------------------------------------------------------------
+  for (const persona of dataset.persone) {
+    const id = uuid();
+    personaId.set(persona.key, id);
     await db.query(
       `insert into persone (id, nome, cognome, codice_fiscale, email, telefono, note, created_by)
        values ($1,$2,$3,$4,$5,$6,$7,$8)`,
       [
-        p.id,
-        p.nome,
-        p.cognome,
-        p.cf,
-        p.email,
-        p.tel,
+        id,
+        persona.nome,
+        persona.cognome,
+        persona.codiceFiscale,
+        persona.email,
+        persona.telefono,
         `${DEMO_MARKER} Contatto di fantasia`,
         userId,
       ],
     );
   }
 
-  const relazioni: Array<[string, string, string]> = [
-    [demo1!.id, persone[0]!.id, "consigliere"],
-    [demo1!.id, persone[1]!.id, "condomino"],
-    [demo1!.id, persone[2]!.id, "condomino"],
-    [demo1!.id, persone[3]!.id, "fornitore"],
-    [demo2!.id, persone[1]!.id, "referente"],
-    [demo2!.id, persone[4]!.id, "consigliere"],
-  ];
-  for (const [condominioId, personaId, ruolo] of relazioni) {
-    await db.query(
-      `insert into condominio_persone (id, condominio_id, persona_id, ruolo) values ($1,$2,$3,$4)`,
-      [uuid(), condominioId, personaId, ruolo],
-    );
-  }
-
-  const unita = [
-    {
-      id: uuid(),
-      condominioId: demo1!.id,
-      identificativo: "Int. 1 - Piano 1",
-      piano: "1",
-      millesimi: 120,
-    },
-    {
-      id: uuid(),
-      condominioId: demo1!.id,
-      identificativo: "Int. 2 - Piano 2",
-      piano: "2",
-      millesimi: 130,
-    },
-    {
-      id: uuid(),
-      condominioId: demo1!.id,
-      identificativo: "Int. 3 - Piano 3",
-      piano: "3",
-      millesimi: 140,
-    },
-    {
-      id: uuid(),
-      condominioId: demo2!.id,
-      identificativo: "Int. 1 - Piano 1",
-      piano: "1",
-      millesimi: 100,
-    },
-    {
-      id: uuid(),
-      condominioId: demo2!.id,
-      identificativo: "Int. 2 - Piano 2",
-      piano: "2",
-      millesimi: 110,
-    },
-  ];
-  for (const u of unita) {
-    await db.query(
-      `insert into unita (id, condominio_id, identificativo, piano, categoria, millesimi, note)
-       values ($1,$2,$3,$4,'Appartamento',$5,$6)`,
-      [u.id, u.condominioId, u.identificativo, u.piano, u.millesimi, demoNotes],
-    );
-  }
-
-  const unitaLinks: Array<[string, string, string, number]> = [
-    [unita[0]!.id, persone[0]!.id, "proprietario", 120],
-    [unita[1]!.id, persone[1]!.id, "proprietario", 130],
-    [unita[2]!.id, persone[2]!.id, "proprietario", 140],
-    [unita[3]!.id, persone[1]!.id, "proprietario", 100],
-    [unita[4]!.id, persone[4]!.id, "proprietario", 110],
-  ];
-  for (const [unitaId, personaId, titolo, millesimi] of unitaLinks) {
-    await db.query(
-      `insert into unita_persone (id, unita_id, persona_id, titolo, millesimi) values ($1,$2,$3,$4,$5)`,
-      [uuid(), unitaId, personaId, titolo, millesimi],
-    );
-  }
-
-  await db.query(
-    `insert into attivita (id, condominio_id, persona_id, tipo, titolo, descrizione, data, scadenza, priorita, created_by)
-     values ($1,$2,$3,'telefonata','Richiamare il consigliere (demo)','Attività dimostrativa', current_date - 2, current_date + 3, 'normale', $4)`,
-    [uuid(), demo1!.id, persone[0]!.id, userId],
-  );
-
-  // --- Segnalazioni --------------------------------------------------------
-  const segnalazioni: Array<{
-    codice: string;
-    condominioId: string;
-    unitaId: string | null;
-    titolo: string;
-    descrizione: string;
-    categoria: string;
-    priorita: string;
-    stato: string;
-    apertura: string;
-    scadenza: string;
-    fornitore: string | null;
-    storico: Array<[string, string]>;
-  }> = [
-    {
-      codice: "SG-DEMO-01",
-      condominioId: demo1!.id,
-      unitaId: unita[0]!.id,
-      titolo: "Perdita d’acqua dal soffitto (demo)",
-      descrizione: "Segnalazione dimostrativa: macchia di umidità nel bagno.",
-      categoria: "guasto",
-      priorita: "alta",
-      stato: "in_corso",
-      apertura: daysAgo(20),
-      scadenza: daysAgo(3),
-      fornitore: persone[3]!.id,
-      storico: [
-        ["nuova", "Apertura segnalazione"],
-        ["in_valutazione", "Sopralluogo programmato"],
-        ["assegnata", "Assegnata a Idraulica Demo"],
-        ["in_corso", "Intervento avviato"],
-      ],
-    },
-    {
-      codice: "SG-DEMO-02",
-      condominioId: demo1!.id,
-      unitaId: null,
-      titolo: "Lampada scala spenta (demo)",
-      descrizione: "Segnalazione dimostrativa per area comune.",
-      categoria: "manutenzione",
-      priorita: "media",
-      stato: "nuova",
-      apertura: daysAgo(4),
-      scadenza: daysFromNow(10),
-      fornitore: null,
-      storico: [["nuova", "Apertura segnalazione"]],
-    },
-    {
-      codice: "SG-DEMO-03",
-      condominioId: demo2!.id,
-      unitaId: null,
-      titolo: "Porta d’ingresso da regolare (demo)",
-      descrizione: "Segnalazione dimostrativa già chiusa.",
-      categoria: "sicurezza",
-      priorita: "bassa",
-      stato: "chiusa",
-      apertura: daysAgo(60),
-      scadenza: daysAgo(45),
-      fornitore: null,
-      storico: [
-        ["nuova", "Apertura segnalazione"],
-        ["risolta", "Regolazione completata"],
-        ["chiusa", "Verifica effettuata"],
-      ],
-    },
-  ];
-  for (const s of segnalazioni) {
+  // --- Unità ---------------------------------------------------------------
+  for (const unita of dataset.unita) {
     const id = uuid();
+    unitaId.set(unita.key, id);
     await db.query(
-      `insert into segnalazioni (id, codice, condominio_id, unita_id, area_comune, titolo, descrizione, categoria, priorita, stato,
-        data_apertura, scadenza, data_chiusura, fornitore_persona_id, created_by)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+      `insert into unita (id, condominio_id, identificativo, piano, categoria,
+         millesimi, millesimi_riscaldamento, note)
+       values ($1,$2,$3,$4,$5,$6,$7,$8)`,
       [
         id,
-        s.codice,
-        s.condominioId,
-        s.unitaId,
-        s.unitaId ? null : "Area comune",
-        s.titolo,
-        s.descrizione,
-        s.categoria,
-        s.priorita,
-        s.stato,
-        s.apertura,
-        s.scadenza,
-        s.stato === "chiusa" ? daysAgo(45) : null,
-        s.fornitore,
-        userId,
+        condominioId.get(unita.condominio)!,
+        unita.identificativo,
+        unita.piano,
+        unita.categoria,
+        unita.millesimi,
+        unita.millesimiRiscaldamento,
+        `${DEMO_MARKER} Unità dimostrativa`,
       ],
     );
-    let previous: string | null = null;
-    let step = 0;
-    for (const [stato, nota] of s.storico) {
-      step += 1;
+  }
+
+  // --- Relazioni e titoli --------------------------------------------------
+  for (const relazione of dataset.relazioni) {
+    await db.query(
+      `insert into condominio_persone (id, condominio_id, persona_id, ruolo, qualifica)
+       values ($1,$2,$3,$4,$5)`,
+      [
+        uuid(),
+        condominioId.get(relazione.condominio)!,
+        personaId.get(relazione.persona)!,
+        relazione.ruolo,
+        relazione.qualifica ?? null,
+      ],
+    );
+  }
+  for (const titolo of dataset.unitaPersone) {
+    await db.query(
+      `insert into unita_persone (id, unita_id, persona_id, titolo, millesimi)
+       values ($1,$2,$3,$4,$5)`,
+      [
+        uuid(),
+        unitaId.get(titolo.unita)!,
+        personaId.get(titolo.persona)!,
+        titolo.titolo,
+        titolo.millesimi,
+      ],
+    );
+  }
+
+  // Millesimi posseduti da ciascuna persona, per condominio (usati in assemblea).
+  const millesimiPersona = new Map<string, number>();
+  for (const titolo of dataset.unitaPersone) {
+    if (titolo.titolo !== "proprietario") continue;
+    const unita = dataset.unita.find((u) => u.key === titolo.unita)!;
+    const chiave = `${unita.condominio}|${titolo.persona}`;
+    millesimiPersona.set(chiave, euro((millesimiPersona.get(chiave) ?? 0) + (titolo.millesimi ?? 0)));
+  }
+
+  // --- Attività ------------------------------------------------------------
+  for (const attivita of dataset.attivita) {
+    await db.query(
+      `insert into attivita (id, condominio_id, persona_id, tipo, titolo, descrizione,
+         data, scadenza, completata, priorita, created_by, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now() - ($12 || ' days')::interval)`,
+      [
+        uuid(),
+        attivita.condominio ? condominioId.get(attivita.condominio)! : null,
+        attivita.persona ? personaId.get(attivita.persona)! : null,
+        attivita.tipo,
+        attivita.titolo,
+        attivita.descrizione ?? null,
+        giornoRelativo(now, attivita.giorni),
+        attivita.scadenzaGiorni !== undefined
+          ? giornoRelativo(now, attivita.scadenzaGiorni)
+          : null,
+        attivita.completata,
+        attivita.priorita,
+        userId,
+        String(Math.max(1, -attivita.giorni)),
+      ],
+    );
+  }
+
+  // --- Segnalazioni --------------------------------------------------------
+  const sequenzaStati: Record<string, string[]> = {
+    nuova: ["nuova"],
+    in_valutazione: ["nuova", "in_valutazione"],
+    assegnata: ["nuova", "assegnata"],
+    in_corso: ["nuova", "assegnata", "in_corso"],
+    risolta: ["nuova", "in_corso", "risolta"],
+    chiusa: ["nuova", "risolta", "chiusa"],
+  };
+  const notaStato: Record<string, string> = {
+    nuova: "Apertura della segnalazione.",
+    in_valutazione: "Presa in carico e prima valutazione.",
+    assegnata: "Assegnata al fornitore incaricato.",
+    in_corso: "Intervento avviato.",
+    risolta: "Intervento completato, in attesa di verifica.",
+    chiusa: "Verifica effettuata, segnalazione chiusa.",
+  };
+
+  for (const [indice, segnalazione] of dataset.segnalazioni.entries()) {
+    const id = uuid();
+    segnalazioneId.set(segnalazione.key, id);
+    const apertura = giornoRelativo(now, segnalazione.aperturaGiorni);
+    const chiusura =
+      segnalazione.chiusuraGiorni !== undefined
+        ? giornoRelativo(now, segnalazione.chiusuraGiorni)
+        : segnalazione.stato === "risolta" || segnalazione.stato === "chiusa"
+          ? giornoRelativo(now, -2)
+          : null;
+
+    await db.query(
+      `insert into segnalazioni (id, codice, condominio_id, unita_id, area_comune, titolo,
+         descrizione, categoria, priorita, stato, data_apertura, scadenza, data_chiusura,
+         fornitore_persona_id, referente, created_by, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16, now() - ($17 || ' days')::interval)`,
+      [
+        id,
+        `SG-DEMO-${String(indice + 1).padStart(3, "0")}`,
+        condominioId.get(segnalazione.condominio)!,
+        segnalazione.unita ? unitaId.get(segnalazione.unita)! : null,
+        segnalazione.areaComune ?? null,
+        segnalazione.titolo,
+        segnalazione.descrizione,
+        segnalazione.categoria,
+        segnalazione.priorita,
+        segnalazione.stato,
+        apertura,
+        segnalazione.scadenzaGiorni !== undefined
+          ? giornoRelativo(now, segnalazione.scadenzaGiorni)
+          : null,
+        chiusura,
+        segnalazione.fornitore ? personaId.get(segnalazione.fornitore)! : null,
+        segnalazione.referente ?? null,
+        userId,
+        String(Math.max(1, -segnalazione.aperturaGiorni)),
+      ],
+    );
+
+    const storico =
+      segnalazione.storico ??
+      (sequenzaStati[segnalazione.stato] ?? ["nuova"]).map((stato, posizione, tutti) => ({
+        stato,
+        nota: notaStato[stato] ?? "Aggiornamento di stato.",
+        giorni:
+          -segnalazione.aperturaGiorni -
+          Math.round(
+            ((-segnalazione.aperturaGiorni + (segnalazione.chiusuraGiorni ?? 0)) *
+              (tutti.length - 1 - posizione)) /
+              Math.max(tutti.length - 1, 1),
+          ),
+      }));
+
+    let precedente: string | null = null;
+    for (const passo of storico) {
       await db.query(
         `insert into segnalazione_storico (id, segnalazione_id, da_stato, a_stato, nota, user_id, created_at)
          values ($1,$2,$3,$4,$5,$6, now() - ($7 || ' days')::interval)`,
-        [uuid(), id, previous, stato, nota, userId, String(20 - step)],
+        [
+          uuid(),
+          id,
+          precedente,
+          passo.stato,
+          passo.nota,
+          userId,
+          String(Math.max(0, -passo.giorni)),
+        ],
       );
-      previous = stato;
+      precedente = passo.stato;
     }
   }
 
   // --- Assemblee -----------------------------------------------------------
-  const assembleaPassata = uuid();
-  await db.query(
-    `insert into assemblee (id, condominio_id, data, ora, tipo, luogo, modalita, stato, note, created_by)
-     values ($1,$2,$3,'18:00','ordinaria','Sala condominiale','presenza','svolta',$4,$5)`,
-    [
-      assembleaPassata,
-      demo1!.id,
-      daysAgo(120),
-      `${DEMO_MARKER} Assemblea dimostrativa`,
-      userId,
-    ],
-  );
-  const assembleaFutura = uuid();
-  await db.query(
-    `insert into assemblee (id, condominio_id, data, ora, tipo, luogo, modalita, stato, note, created_by)
-     values ($1,$2,$3,'18:30','ordinaria','Sala condominiale','mista','convocata',$4,$5)`,
-    [
-      assembleaFutura,
-      demo1!.id,
-      daysFromNow(21),
-      `${DEMO_MARKER} Assemblea dimostrativa`,
-      userId,
-    ],
-  );
+  for (const assemblea of dataset.assemblee) {
+    const id = uuid();
+    assembleaId.set(assemblea.key, id);
+    await db.query(
+      `insert into assemblee (id, condominio_id, data, ora, tipo, luogo, modalita, stato,
+         quorum_registrato, note, created_by, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11, now() - ($12 || ' days')::interval)`,
+      [
+        id,
+        condominioId.get(assemblea.condominio)!,
+        giornoRelativo(now, assemblea.giorni),
+        assemblea.ora,
+        assemblea.tipo,
+        assemblea.luogo,
+        assemblea.modalita,
+        assemblea.stato,
+        assemblea.quorumRegistrato,
+        `${DEMO_MARKER} Assemblea dimostrativa`,
+        userId,
+        String(Math.max(1, 30 - assemblea.giorni)),
+      ],
+    );
 
-  const puntiPassata: Array<[string, string, string | null]> = [
-    [
-      "Approvazione consuntivo esercizio (demo)",
-      "approvato",
-      "Delibera dimostrativa: consuntivo approvato a maggioranza.",
-    ],
-    ["Manutenzione facciata (demo)", "rinviato", null],
-  ];
-  for (const [i, [titolo, esito, delibera]] of puntiPassata.entries()) {
-    await db.query(
-      `insert into assemblea_punti (id, assemblea_id, ordine, titolo, esito, delibera) values ($1,$2,$3,$4,$5,$6)`,
-      [uuid(), assembleaPassata, i + 1, titolo, esito, delibera],
-    );
-  }
-  const puntiFutura: string[] = [
-    "Approvazione preventivo (demo)",
-    "Approvazione bilancio consuntivo (demo)",
-    "Varie ed eventuali (demo)",
-  ];
-  for (const [i, titolo] of puntiFutura.entries()) {
-    await db.query(
-      `insert into assemblea_punti (id, assemblea_id, ordine, titolo) values ($1,$2,$3,$4)`,
-      [uuid(), assembleaFutura, i + 1, titolo],
-    );
-  }
-  for (const [personaId, presente, millesimi] of [
-    [persone[0]!.id, true, 120],
-    [persone[1]!.id, true, 130],
-    [persone[2]!.id, false, 140],
-  ] as Array<[string, boolean, number]>) {
-    await db.query(
-      `insert into assemblea_partecipanti (id, assemblea_id, persona_id, presente, millesimi) values ($1,$2,$3,$4,$5)`,
-      [uuid(), assembleaFutura, personaId, presente, millesimi],
-    );
-  }
-
-  // --- Rendiconti ----------------------------------------------------------
-  const periodo2024 = uuid();
-  await db.query(
-    `insert into periodi_contabili (id, condominio_id, etichetta, data_inizio, data_fine, stato, note, created_by)
-     values ($1,$2,'Esercizio 2024 (demo)','2024-01-01','2024-12-31','chiuso',$3,$4)`,
-    [periodo2024, demo1!.id, `${DEMO_MARKER} Dati dimostrativi`, userId],
-  );
-  const spese = [
-    ["2024-02-15", "Energia elettrica scale (demo)", "Utenze", 850.0],
-    ["2024-03-10", "Pulizia parti comuni (demo)", "Pulizia", 1600.0],
-    ["2024-05-20", "Manutenzione ascensore (demo)", "Manutenzione", 1200.0],
-    ["2024-09-05", "Assicurazione stabile (demo)", "Assicurazione", 950.0],
-    ["2024-11-30", "Amministrazione (demo)", "Amministrazione", 1200.0],
-  ] as Array<[string, string, string, number]>;
-  for (const [data, descrizione, categoria, importo] of spese) {
-    await db.query(
-      `insert into spese (id, periodo_id, data, descrizione, categoria, importo, created_by) values ($1,$2,$3,$4,$5,$6,$7)`,
-      [uuid(), periodo2024, data, descrizione, categoria, importo, userId],
-    );
-  }
-  const rateDemo = [
-    [unita[0]!.id, "Rata 1 (demo)", "2024-03-31", 600, [["2024-03-28", 600]]],
-    [unita[1]!.id, "Rata 1 (demo)", "2024-03-31", 600, [["2024-03-30", 300]]],
-    [unita[2]!.id, "Rata 1 (demo)", "2024-03-31", 600, []],
-    [unita[0]!.id, "Rata 2 (demo)", "2024-09-30", 600, [["2024-09-25", 600]]],
-    [unita[1]!.id, "Rata 2 (demo)", "2024-09-30", 600, [["2024-09-29", 600]]],
-    [unita[2]!.id, "Rata 2 (demo)", "2024-09-30", 600, []],
-  ] as Array<[string, string, string, number, Array<[string, number]>]>;
-  for (const [unitaId, descrizione, scadenza, importo, pagamenti] of rateDemo) {
-    const rataId = uuid();
-    await db.query(
-      `insert into rate (id, periodo_id, unita_id, descrizione, scadenza, importo, criteri_ripartizione, created_by)
-       values ($1,$2,$3,$4,$5,$6,'Millesimi (demo)',$7)`,
-      [rataId, periodo2024, unitaId, descrizione, scadenza, importo, userId],
-    );
-    for (const [data, valore] of pagamenti) {
+    for (const [indice, punto] of assemblea.punti.entries()) {
       await db.query(
-        `insert into pagamenti (id, rata_id, data, importo, metodo, created_by) values ($1,$2,$3,$4,'bonifico',$5)`,
-        [uuid(), rataId, data, valore, userId],
+        `insert into assemblea_punti (id, assemblea_id, ordine, titolo, descrizione, esito, delibera)
+         values ($1,$2,$3,$4,$5,$6,$7)`,
+        [
+          uuid(),
+          id,
+          indice + 1,
+          punto.titolo,
+          punto.descrizione ?? null,
+          punto.esito ?? null,
+          punto.delibera ?? null,
+        ],
+      );
+    }
+
+    for (const partecipante of assemblea.partecipanti) {
+      const millesimi = millesimiPersona.get(
+        `${assemblea.condominio}|${partecipante.persona}`,
+      );
+      await db.query(
+        `insert into assemblea_partecipanti (id, assemblea_id, persona_id, presente, delegante, millesimi)
+         values ($1,$2,$3,$4,$5,$6)`,
+        [
+          uuid(),
+          id,
+          personaId.get(partecipante.persona)!,
+          partecipante.presente,
+          partecipante.delegante ?? null,
+          millesimi ?? null,
+        ],
       );
     }
   }
 
-  const periodo2025 = uuid();
-  await db.query(
-    `insert into periodi_contabili (id, condominio_id, etichetta, data_inizio, data_fine, stato, note, created_by)
-     values ($1,$2,'Preventivo 2025 (demo)','2025-01-01','2025-12-31','bozza',$3,$4)`,
-    [periodo2025, demo1!.id, `${DEMO_MARKER} Dati dimostrativi`, userId],
-  );
-  await db.query(
-    `insert into spese (id, periodo_id, data, descrizione, categoria, importo, created_by)
-     values ($1,$2,'2025-01-20','Pulizia parti comuni (demo)','Pulizia',1700,$3)`,
-    [uuid(), periodo2025, userId],
-  );
+  // --- Rendiconti ----------------------------------------------------------
+  let rateCreate = 0;
+  let pagamentiCreati = 0;
+  for (const periodo of dataset.periodi) {
+    const id = uuid();
+    periodoId.set(periodo.key, id);
+    await db.query(
+      `insert into periodi_contabili (id, condominio_id, etichetta, data_inizio, data_fine, stato, note, created_by)
+       values ($1,$2,$3,$4,$5,$6,$7,$8)`,
+      [
+        id,
+        condominioId.get(periodo.condominio)!,
+        periodo.etichetta,
+        periodo.inizio,
+        periodo.fine,
+        periodo.stato,
+        `${DEMO_MARKER} Periodo dimostrativo`,
+        userId,
+      ],
+    );
+
+    for (const spesa of periodo.spese) {
+      // Nessuna spesa può essere datata nel futuro: se la demo viene eseguita a
+      // inizio anno, le voci nominali vengono ricondotte a una data plausibile.
+      const dataSpesa = spesa.data > oggi ? giornoRelativo(now, -3) : spesa.data;
+      await db.query(
+        `insert into spese (id, periodo_id, data, descrizione, categoria, importo, fornitore, created_by)
+         values ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [
+          uuid(),
+          id,
+          dataSpesa < periodo.inizio ? periodo.inizio : dataSpesa,
+          spesa.descrizione,
+          spesa.categoria,
+          euro(spesa.importo),
+          spesa.fornitore ?? null,
+          userId,
+        ],
+      );
+    }
+
+    if (periodo.budget === null) continue;
+
+    const unita = unitaDelCondominio(dataset, periodo.condominio);
+    for (const rata of periodo.rate) {
+      for (const [indice, unitaCorrente] of unita.entries()) {
+        const importo = euro(
+          (periodo.budget * rata.quota * unitaCorrente.millesimi) / 1000,
+        );
+        if (importo <= 0) continue;
+        const rataId = uuid();
+        rateCreate += 1;
+        await db.query(
+          `insert into rate (id, periodo_id, unita_id, descrizione, numero, scadenza, importo,
+             criteri_ripartizione, created_by)
+           values ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+          [
+            rataId,
+            id,
+            unitaId.get(unitaCorrente.key)!,
+            rata.descrizione,
+            rata.numero,
+            rata.scadenza,
+            importo,
+            "Ripartizione per millesimi di proprietà (valore registrato, non ricalcolato)",
+            userId,
+          ],
+        );
+
+        const comportamento = rata.pagamenti?.(indice) ?? "completo";
+        if (comportamento === "nessuno") continue;
+        const versato = comportamento === "parziale" ? euro(importo * 0.4) : importo;
+        if (versato <= 0) continue;
+        pagamentiCreati += 1;
+        await db.query(
+          `insert into pagamenti (id, rata_id, data, importo, metodo, riferimento, created_by)
+           values ($1,$2,$3,$4,'bonifico',$5,$6)`,
+          [
+            uuid(),
+            rataId,
+            dataPagamento(rata.scadenza, oggi),
+            versato,
+            comportamento === "parziale" ? "Acconto" : null,
+            userId,
+          ],
+        );
+      }
+    }
+  }
 
   // --- Consumi -------------------------------------------------------------
-  const consumi = [
-    ["acqua", "2024-01-01", "2024-03-31", 120.5, "m3", 320.0, "inserito"],
-    ["acqua", "2024-04-01", "2024-06-30", 138.2, "m3", 350.0, "inserito"],
-    ["acqua", "2024-07-01", "2024-09-30", 151.9, "m3", 390.0, "importato"],
-    ["acqua", "2024-10-01", "2024-12-31", 110.4, "m3", 300.0, "inserito"],
-    ["gas", "2024-01-01", "2024-03-31", 820.0, "m3", 700.0, "inserito"],
-    ["gas", "2024-04-01", "2024-06-30", 210.0, "m3", 190.0, "stimato"],
-  ] as Array<[string, string, string, number, string, number, string]>;
-  for (const [categoria, da, a, valore, um, costo, origine] of consumi) {
+  for (const consumo of dataset.consumi) {
     await db.query(
-      `insert into consumi (id, condominio_id, categoria, periodo_da, periodo_a, valore, unita_misura, costo, fonte, origine, data_rilevazione, note, created_by)
-       values ($1,$2,$3,$4,$5,$6,$7,$8,'Demo',$9,$10,$11,$12)`,
+      `insert into consumi (id, condominio_id, categoria, periodo_da, periodo_a, valore,
+         unita_misura, costo, fonte, origine, data_rilevazione, note, created_by)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
       [
         uuid(),
-        demo1!.id,
-        categoria,
-        da,
-        a,
-        valore,
-        um,
-        costo,
-        origine,
-        da,
-        `${DEMO_MARKER} Valore dimostrativo`,
+        condominioId.get(consumo.condominio)!,
+        consumo.categoria,
+        consumo.da,
+        consumo.a,
+        consumo.valore,
+        consumo.unitaMisura,
+        consumo.costo,
+        consumo.fonte,
+        consumo.origine,
+        consumo.a,
+        consumo.note ? `${DEMO_MARKER} ${consumo.note}` : `${DEMO_MARKER} Valore dimostrativo`,
         userId,
       ],
     );
   }
 
-  return { userId, email };
-}
+  // --- Documenti -----------------------------------------------------------
+  let documentiCreati = 0;
+  for (const [indice, documento] of dataset.documenti.entries()) {
+    const contenuto =
+      documento.tipo === "pdf"
+        ? buildPdf(documento.titolo, documento.righe)
+        : documento.tipo === "csv"
+          ? buildCsv(documento.righe)
+          : await buildXlsx(documento);
+    const mime =
+      documento.tipo === "pdf"
+        ? "application/pdf"
+        : documento.tipo === "csv"
+          ? "text/csv"
+          : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+    const id = uuid();
+    const estensione = documento.tipo;
+    const storageKey = `${now.getFullYear()}/${id}/${nomeSicuro(documento.nomeFile, estensione)}`;
+    try {
+      await storage.put(storageKey, contenuto, mime);
+    } catch (error) {
+      process.stderr.write(
+        `[demo] documento non archiviato (${documento.nomeFile}): ${(error as Error).message}\n`,
+      );
+      continue;
+    }
+    const entitaId =
+      documento.entitaTipo === "assemblea"
+        ? assembleaId.get(documento.entitaRef ?? "")
+        : documento.entitaTipo === "periodo_contabile"
+          ? periodoId.get(documento.entitaRef ?? "")
+          : documento.entitaTipo === "segnalazione"
+            ? segnalazioneId.get(documento.entitaRef ?? "")
+            : null;
+    await db.query(
+      `insert into documenti (id, condominio_id, entita_tipo, entita_id, nome_file, mime,
+         dimensione, storage_key, checksum_sha256, categoria, descrizione, created_by, created_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, now() - ($13 || ' days')::interval)`,
+      [
+        id,
+        condominioId.get(documento.condominio)!,
+        documento.entitaTipo,
+        entitaId ?? null,
+        documento.nomeFile,
+        mime,
+        contenuto.length,
+        storageKey,
+        sha256(contenuto),
+        documento.categoria,
+        `${DEMO_MARKER} ${documento.descrizione}`,
+        userId,
+        String(18 + indice * 4),
+      ],
+    );
+    documentiCreati += 1;
+  }
 
-function daysAgo(days: number): string {
-  const d = new Date();
-  d.setDate(d.getDate() - days);
-  return d.toISOString().slice(0, 10);
-}
+  // --- Registro importazioni ----------------------------------------------
+  for (const lotto of dataset.importazioni) {
+    const batchId = uuid();
+    const totale = lotto.righe.length;
+    const errori = lotto.righe.filter((r) => r.esito === "errore").length;
+    const duplicati = lotto.righe.filter((r) => r.esito === "duplicato").length;
+    const importate = lotto.righe.filter((r) => r.esito === "importata").length;
+    await db.query(
+      `insert into import_batches (id, tipo, nome_file, dimensione, hash_file, stato,
+         righe_totali, righe_valide, righe_errori, righe_duplicate, riepilogo, created_by,
+         created_at, completato_at)
+       values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,
+         now() - ($13 || ' days')::interval, now() - ($13 || ' days')::interval)`,
+      [
+        batchId,
+        lotto.tipo,
+        lotto.nomeFile,
+        4200 + totale * 180,
+        sha256(`${DEMO_MARKER}${lotto.nomeFile}`),
+        lotto.stato,
+        totale,
+        importate,
+        errori,
+        duplicati,
+        JSON.stringify({
+          dimostrativo: true,
+          nota: `${DEMO_MARKER} Lotto di esempio: il file non è stato conservato.`,
+          importate,
+          ignorate: duplicati,
+        }),
+        userId,
+        String(Math.max(1, -lotto.giorni)),
+      ],
+    );
+    for (const riga of lotto.righe) {
+      await db.query(
+        `insert into import_rows (id, batch_id, numero_riga, dati, errori, avvisi,
+           duplicato, esito, created_at)
+         values ($1,$2,$3,$4,$5,'[]'::jsonb,$6,$7, now() - ($8 || ' days')::interval)`,
+        [
+          uuid(),
+          batchId,
+          riga.numero,
+          JSON.stringify({ riga: riga.sintesi, dimostrativo: true }),
+          JSON.stringify(riga.errori ?? []),
+          riga.esito === "duplicato",
+          riga.esito,
+          String(Math.max(1, -lotto.giorni)),
+        ],
+      );
+    }
+  }
 
-function daysFromNow(days: number): string {
-  return daysAgo(-days);
+  // --- Audit log -----------------------------------------------------------
+  for (const voce of dataset.audit) {
+    await db.query(
+      `insert into audit_log (id, user_id, attore_email, azione, entita_tipo, descrizione, created_at)
+       values ($1,$2,$3,$4,$5,$6, now() - ($7 || ' days')::interval)`,
+      [
+        uuid(),
+        userId,
+        email,
+        voce.azione,
+        voce.entitaTipo,
+        voce.descrizione,
+        String(Math.max(1, -voce.giorni)),
+      ],
+    );
+  }
+
+  return {
+    userId,
+    email,
+    password,
+    documenti: documentiCreati,
+    conteggi: {
+      condomini: dataset.condomini.length,
+      persone: dataset.persone.length,
+      unita: dataset.unita.length,
+      relazioni: dataset.relazioni.length,
+      titoliUnita: dataset.unitaPersone.length,
+      segnalazioni: dataset.segnalazioni.length,
+      assemblee: dataset.assemblee.length,
+      periodi: dataset.periodi.length,
+      rate: rateCreate,
+      pagamenti: pagamentiCreati,
+      consumi: dataset.consumi.length,
+      attivita: dataset.attivita.length,
+      documenti: documentiCreati,
+      importazioni: dataset.importazioni.length,
+    },
+  };
 }

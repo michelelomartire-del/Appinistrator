@@ -139,6 +139,12 @@ la password tentata.
 | Stimato | `origine = 'stimato'` | Escluso dai confronti, marcato in interfaccia |
 | Demo | valori e note con prefisso `[DEMO]`, `DEMO_MODE` attivo | Solo ambienti di prova |
 
+Il dataset dimostrativo (`npm run seed:demo`, sorgente in
+`src/server/services/demo-data.ts`) rispetta tutte le regole di questa pagina:
+millesimi che sommano 1000, rate derivate dal budget per millesimi, incassi non
+superiori alle rate, consumi stagionali con valori stimati dichiarati. Il test
+`tests/demo-data.test.ts` verifica automaticamente queste coerenze.
+
 ## Cosa il modello non contiene (per scelta)
 
 - credenziali o dati di pagamento dei condòmini;

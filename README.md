@@ -48,6 +48,32 @@ npm run dev                    # API su :4000 + interfaccia su :5173
 Account demo creato dal seed: `demo@effebi.invalid` / `EffeBi-Demo-2026!`.
 Il seed è rifiutato quando `NODE_ENV=production`.
 
+### Cosa contiene la demo
+
+Il seed crea un ambiente completo e coerente, interamente inventato e marcato
+`[DEMO]`:
+
+| Area | Contenuto |
+| --- | --- |
+| Condomìni | 6 anagrafiche (5 attivi + 1 potenziale) fra Bologna e provincia |
+| Unità | 70 unità (appartamenti e garage) con millesimi che tornano a 1000 per condominio |
+| Persone | 24 contatti: condòmini, consiglieri, referenti e 6 fornitori |
+| Segnalazioni | 16 pratiche in stati diversi, con storico e due scadute |
+| Assemblee | 7 assemblee (svolte, convocate, programmate) con punti, esiti e partecipanti |
+| Rendiconti | 7 periodi su due esercizi, 160 rate e 113 pagamenti registrati |
+| Consumi | 26 rilevazioni trimestrali e mensili, con valori stimati dichiarati |
+| Attività | 12 note e promemoria, alcuni in scadenza |
+| Documenti | 9 file reali nell'archivio privato (verbali, polizza, riparto CSV, preventivo XLSX) |
+| Importazioni | 2 lotti storici con righe importate, un errore e un duplicato |
+| Audit | 6 voci di registro |
+
+Le rate derivano dal budget del periodo ripartito per millesimi, gli incassi sono
+compatibili con le rate emesse e i mesi estivi hanno consumi di gas più bassi:
+i numeri sono inventati ma le relazioni fra loro sono coerenti. `npm run seed:demo`
+può essere rieseguito in qualsiasi momento: azzera **solo** i record demo
+(condomìni `DEMO-*`, persone e consumi marcati `[DEMO]`, lotti `demo-*`) e
+ricostruisce il dataset aggiornato alla data corrente.
+
 ## Comandi
 
 | Comando | Descrizione |

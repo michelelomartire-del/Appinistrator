@@ -67,6 +67,8 @@ async function periodoSummary(periodoId: string): Promise<PeriodoDto> {
     criteriRipartizionePresenti: toNumber(row.rate_con_criterio) > 0,
     unitaSenzaMillesimi: toNumber(row.unita_senza_millesimi),
     rateSenzaUnita: toNumber(row.rate_senza_unita),
+    numeroSpese: toNumber(row.numero_spese),
+    statoPeriodo: row.stato === "chiuso" ? "chiuso" : "bozza",
   });
   return {
     id: String(row.id),

@@ -68,6 +68,10 @@ export function sintesiPeriodo(input: {
   criteriRipartizionePresenti: boolean;
   unitaSenzaMillesimi: number;
   rateSenzaUnita: number;
+  /** Numero di spese registrate, quando il chiamante passa solo il totale. */
+  numeroSpese?: number;
+  /** Stato del periodo: in bozza il confronto rate/spese è solo indicativo. */
+  statoPeriodo?: "bozza" | "chiuso";
   oggi?: string;
 }): {
   totaleSpese: number;
@@ -126,20 +130,26 @@ export function sintesiPeriodo(input: {
         "Nessun criterio di ripartizione indicato: il CRM non calcola importi per unità.",
     });
   }
+  // Il riparto per millesimi produce arrotondamenti di pochi centesimi:
+  // la tolleranza cresce con il numero di rate, così non si segnalano falsi errori.
+  const tolleranzaArrotondamento = Math.max(0.05, input.rate.length * 0.01);
   if (
     input.rate.length > 0 &&
     totaleRate > 0 &&
-    Math.abs(totaleRate - totaleSpese) > 0.01 &&
+    Math.abs(totaleRate - totaleSpese) > tolleranzaArrotondamento &&
     input.spese.length > 0
   ) {
     avvisi.push({
       codice: "rate_non_quadrano",
-      messaggio: `Totale rate (${formatIt(totaleRate)} €) diverso dal totale spese (${formatIt(totaleSpese)} €): verifica i dati registrati.`,
+      messaggio:
+        input.statoPeriodo === "bozza"
+          ? `Periodo in bozza: le rate si basano sul preventivo (${formatIt(totaleRate)} €) e le spese registrate finora sono ${formatIt(totaleSpese)} €. Il confronto è indicativo fino alla chiusura del periodo.`
+          : `Totale rate (${formatIt(totaleRate)} €) diverso dal totale spese (${formatIt(totaleSpese)} €): verifica i dati registrati.`,
     });
   }
   return {
     totaleSpese,
-    numeroSpese: input.spese.length,
+    numeroSpese: input.numeroSpese ?? input.spese.length,
     totaleRate,
     incassato,
     residuo,
