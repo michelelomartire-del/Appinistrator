@@ -8,6 +8,22 @@ documenti e importazione massiva da CSV/XLSX.
 > Questo repository è **indipendente** dal sito pubblico dello studio: nessun file,
 > database o credenziale del sito viene letto o modificato da qui.
 
+## Due modi di usarlo
+
+| | Demo statica | Applicazione completa |
+| --- | --- | --- |
+| Accesso | Nessuno: si apre direttamente | Account amministratore con MFA |
+| Backend | Nessuno (dati nel browser) | Node + PostgreSQL in UE |
+| Deploy | Vercel, gratis, un clic | Server con dominio e backup |
+| Comando | `npm run dev:demo` / `npm run build:demo` | `npm run dev` / `npm run build` |
+| Dati | Inventati e marcati `[DEMO]` | Solo quelli reali dello studio |
+
+La demo serve a **vedere e provare** il gestionale: si apre senza login, con dati
+inventati ma coerenti, e alcune funzioni sono modificabili (condomìni, unità,
+persone, segnalazioni, attività). Rendiconti, assemblee e consumi sono in sola
+lettura perché la demo non simula calcoli contabili.
+Guida: [`docs/DEMO-VERCEL.md`](docs/DEMO-VERCEL.md).
+
 ## Caratteristiche
 
 | Area | Contenuto |
@@ -87,11 +103,15 @@ ricostruisce il dataset aggiornato alla data corrente.
 | `npm run seed:demo` | Dati dimostrativi sintetici |
 | `npm run template:xlsx` | Rigenera i template di import in `templates/` |
 | `npm run typecheck` | TypeScript su client e server |
-| `npm test` | Suite automatica (auth, condomìni, moduli, import, calcoli, dashboard, UI) |
+| `npm run dev:demo` | Demo statica in locale (porta 5174, senza backend) |
+| `npm run build:demo` | Build statica della demo in `dist/demo` (per Vercel) |
+| `npm run demo:snapshot` | Rigenera snapshot e file dimostrativi |
+| `npm test` | Suite automatica (auth, condomìni, moduli, import, calcoli, dashboard, UI, demo) |
 | `scripts/backup.sh` | Backup di database e documenti con verifica e rotazione (cron) |
 
 ## Documentazione
 
+- [`docs/DEMO-VERCEL.md`](docs/DEMO-VERCEL.md) — demo statica senza login e deploy su Vercel
 - [`docs/DEPLOY-UE.md`](docs/DEPLOY-UE.md) — runbook completo su server Node in UE (server, PostgreSQL, HTTPS, backup, go-live)
 - [`docs/INSTALLAZIONE.md`](docs/INSTALLAZIONE.md) — installazione, primo avvio, messa in produzione
 - [`docs/CONFIGURAZIONE.md`](docs/CONFIGURAZIONE.md) — variabili d'ambiente, storage, sicurezza, MFA

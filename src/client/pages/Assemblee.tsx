@@ -20,6 +20,7 @@ import {
   stateLabel,
   useToast,
 } from "../components/ui";
+import { DemoNota } from "../components/DemoNota";
 import { useCondominioOptions } from "./Condomini";
 import type { AssembleaDto, Paginated } from "@shared/api-types";
 import {
@@ -97,6 +98,8 @@ export function Assemblee() {
         subtitle="Data, ordine del giorno, presenze e delibere. Nessun calcolo automatico di maggioranze."
         actions={<Button onClick={() => setOpen(true)}>Nuova assemblea</Button>}
       />
+
+      <DemoNota>Le assemblee mostrate sono di esempio: nella demo non si possono creare, modificare o registrare presenze. Nessun calcolo di maggioranze o quorum.</DemoNota>
 
       <div className="filters">
         <Field label="Condominio">

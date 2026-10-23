@@ -20,6 +20,9 @@
     "admin:reset-mfa": "tsx src/server/cli/reset-mfa.ts",
     "seed:demo": "tsx src/server/cli/seed-demo.ts",
     "template:xlsx": "tsx src/server/cli/make-template.ts",
+    "demo:snapshot": "NODE_ENV=test DATA_DIR=.data/demo-snapshot tsx scripts/build-demo-snapshot.ts",
+    "dev:demo": "npm run demo:snapshot && vite --mode demo --host 0.0.0.0 --port 5174",
+    "build:demo": "npm run demo:snapshot && vite build --mode demo",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.server.json --noEmit",
     "test": "vitest run",
     "test:watch": "vitest"

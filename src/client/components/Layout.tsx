@@ -2,7 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../lib/auth';
 import { SearchBar } from './SearchBar';
-import { Button } from './ui';
+import { Badge, Button } from './ui';
+import { isDemo, resetDemo } from '../../demo';
 
 const nav = [
   { section: 'Dashboard', items: [{ to: '/', label: 'Panoramica', icon: '◧', end: true }] },
@@ -82,7 +83,22 @@ export function Layout() {
       <div className="main">
         {session?.authenticated && session.demoMode ? (
           <div className="demo-banner">
-            <strong>Ambiente demo.</strong> I dati mostrati sono sintetici e marcati [DEMO]. Non usare per il lavoro reale.
+            <span>
+              <strong>Demo.</strong> Dati inventati e marcati [DEMO]: puoi provare le funzioni, nulla viene inviato a un
+              server.
+            </span>
+            {isDemo ? (
+              <button
+                type="button"
+                className="demo-banner__reset"
+                onClick={() => {
+                  resetDemo();
+                  window.location.reload();
+                }}
+              >
+                Ripristina dati demo
+              </button>
+            ) : null}
           </div>
         ) : null}
         <header className="topbar">
@@ -106,9 +122,13 @@ export function Layout() {
               </div>
               <div className="muted small">{user?.email}</div>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => void logout()}>
-              Esci
-            </Button>
+            {isDemo ? (
+              <Badge tone="neutral" label="Demo" />
+            ) : (
+              <Button variant="ghost" size="sm" onClick={() => void logout()}>
+                Esci
+              </Button>
+            )}
           </div>
         </header>
         <main className="content" id="contenuto">

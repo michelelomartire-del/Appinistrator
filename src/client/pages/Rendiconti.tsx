@@ -21,6 +21,7 @@ import {
   stateLabel,
   useToast,
 } from "../components/ui";
+import { DemoNota } from "../components/DemoNota";
 import { useCondominioOptions } from "./Condomini";
 import type { Paginated, PeriodoDto } from "@shared/api-types";
 import { PERIODO_STATI, periodoStatoLabels } from "@shared/constants";
@@ -79,6 +80,8 @@ export function Rendiconti() {
         subtitle="Esercizi contabili, spese, rate e pagamenti registrati. Il CRM non sostituisce il software contabile."
         actions={<Button onClick={() => setOpen(true)}>Nuovo periodo</Button>}
       />
+
+      <DemoNota>Periodi, spese, rate e pagamenti sono dati di esempio: nella demo non si possono creare o modificare. Nell’applicazione reale ogni importo deriva da registrazioni dello studio.</DemoNota>
 
       <div className="filters">
         <Field label="Condominio">
