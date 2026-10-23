@@ -1,1 +1,95 @@
-# Appinistrator
+# CRM EffeBi
+
+Applicazione gestionale interna per **Studio EffeBi — Amministrazioni Condominiali**.
+Sostituisce i fogli di calcolo dello studio con un'unica applicazione web: condomìni,
+persone e unità immobiliari, segnalazioni, assemblee, rendiconti, consumi, archivio
+documenti e importazione massiva da CSV/XLSX.
+
+> Questo repository è **indipendente** dal sito pubblico dello studio: nessun file,
+> database o credenziale del sito viene letto o modificato da qui.
+
+## Caratteristiche
+
+| Area | Contenuto |
+| --- | --- |
+| Accesso | Account unico amministratore creato da riga di comando, nessuna registrazione pubblica, MFA TOTP opzionale, blocco dopo troppi tentativi |
+| Condomìni | Anagrafica clienti, incarico, persone collegate, unità immobiliari e millesimi (con controllo di coerenza sulla somma) |
+| Persone | Rubrica unica, ruoli per condominio, titoli sulle unità, nessun duplicato silenzioso (codice fiscale univoco) |
+| Segnalazioni | Ticket con priorità, stato, storico delle modifiche, scadenze |
+| Assemblee | Convocazioni, punti all'ordine del giorno, partecipanti, quorum **registrato** |
+| Rendiconti | Periodi contabili, spese, rate, pagamenti; totali e residui calcolati dai record |
+| Consumi | Rilevazioni per categoria, con distinzione esplicita tra dato inserito, importato e stimato |
+| Documenti | Archivio privato con permessi verificati lato server, nessun URL pubblico permanente |
+| Import | CSV/XLSX con anteprima, validazione riga per riga, rilevamento duplicati, annullamento dell'importazione |
+| Audit | Registro delle modifiche consultabile dall'amministratore |
+
+Tutti gli indicatori della dashboard derivano da record persistiti. Quando un dato non
+è calcolabile (mancano rate, periodi o rilevazioni confrontabili) l'interfaccia scrive
+**«non calcolabile»** con la motivazione: non esistono zeri o percentuali di comodo.
+
+## Requisiti
+
+- Node.js ≥ 22.10
+- PostgreSQL 15+ in regione UE per la produzione (in sviluppo è incluso PGlite, un
+  PostgreSQL embedded salvato in `.data/`)
+- Un volume per i documenti (disco locale o bucket privato Supabase Storage)
+
+## Avvio rapido (sviluppo, dati sintetici)
+
+```bash
+npm install
+cp .env.example .env          # compilare almeno APP_ENCRYPTION_KEY
+npm run migrate                # crea lo schema
+npm run admin:create -- --email admin@studio.example --nome Nome --cognome Cognome
+npm run seed:demo              # dati FITTIZI marcati [DEMO], mai in produzione
+npm run dev                    # API su :4000 + interfaccia su :5173
+```
+
+Account demo creato dal seed: `demo@effebi.invalid` / `EffeBi-Demo-2026!`.
+Il seed è rifiutato quando `NODE_ENV=production`.
+
+## Comandi
+
+| Comando | Descrizione |
+| --- | --- |
+| `npm run dev` | API (tsx watch) e interfaccia Vite in parallelo |
+| `npm run build` | Build di produzione in `dist/` (client + server) |
+| `npm start` | Avvio del server compilato (serve anche il client) |
+| `npm run migrate` | Applica le migrazioni SQL |
+| `npm run admin:create` | Crea o reimposta l'account amministratore |
+| `npm run admin:reset-mfa` | Disattiva la MFA di un account (recupero da server) |
+| `npm run seed:demo` | Dati dimostrativi sintetici |
+| `npm run template:xlsx` | Rigenera i template di import in `templates/` |
+| `npm run typecheck` | TypeScript su client e server |
+| `npm test` | Suite automatica (auth, condomìni, moduli, import, calcoli, dashboard, UI) |
+
+## Documentazione
+
+- [`docs/INSTALLAZIONE.md`](docs/INSTALLAZIONE.md) — installazione, primo avvio, messa in produzione
+- [`docs/CONFIGURAZIONE.md`](docs/CONFIGURAZIONE.md) — variabili d'ambiente, storage, sicurezza, MFA
+- [`docs/IMPORT.md`](docs/IMPORT.md) — formato dei file, colonne, errori, duplicati, annullamento
+- [`docs/BACKUP-RIPRISTINO.md`](docs/BACKUP-RIPRISTINO.md) — backup e ripristino di database e documenti
+- [`docs/MODELLO-DATI.md`](docs/MODELLO-DATI.md) — modello dati e regole di calcolo
+- [`docs/ARCHITETTURA.md`](docs/ARCHITETTURA.md) — scelte tecniche e motivazioni
+
+## Struttura
+
+```
+src/
+  shared/        tipi e schemi condivisi client/server (Zod)
+  server/        API Express, autenticazione, servizi, migrazioni SQL, CLI
+  client/        interfaccia React (pagine, componenti, hook)
+tests/           test automatici (API, calcoli, componenti)
+templates/       template XLSX di importazione
+docs/            documentazione operativa
+```
+
+## Stato e limiti noti (v1)
+
+- Utente singolo amministratore; nessun portale condòmino, pagamento online,
+  voto elettronico o contabilità automatica (fuori perimetro concordato).
+- Nessun calcolo di riparti o di quorum: il quorum si registra come valore
+  dichiarato in assemblea, non viene dedotto.
+- L'import non sostituisce i dati esistenti: crea o aggiorna solo ciò che è
+  validato in anteprima; resta sempre possibile annullare un lotto.
+- I dati reali dei condomìni non sono inclusi nel repository né nei test.
