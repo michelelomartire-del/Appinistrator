@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { api, ApiRequestError } from "../lib/api";
+import { isDemo } from "../../demo";
 import { useApiQuery } from "../lib/hooks";
 import { useAuth } from "../lib/auth";
 import {
@@ -135,6 +136,13 @@ function SicurezzaTab() {
   };
 
   return (
+    <>
+      {isDemo ? (
+        <Banner tone="warning" title="Impostazioni non modificabili nella demo">
+          In questa demo l’accesso è già attivo e non esiste un server: MFA, sessioni e registro di controllo sono
+          mostrati a scopo illustrativo. Nell’app reale si gestiscono qui.
+        </Banner>
+      ) : null}
     <div className="grid-2" style={{ alignItems: "start" }}>
       <Card title="Autenticazione a due fattori (MFA)">
         {user?.mfaEnabled ? (
@@ -232,6 +240,7 @@ function SicurezzaTab() {
         <ChangePassword />
       </Card>
     </div>
+    </>
   );
 }
 

@@ -20,6 +20,8 @@ export default defineConfig({
       DATA_DIR: '.data/test',
       APP_ENCRYPTION_KEY: 'test-key-solo-per-i-test-automatici',
       DEMO_MODE: 'false',
+      // attiva il ramo della demo statica nei test dell'interfaccia
+      VITE_DEMO: '1',
     },
   },
 });

@@ -22,6 +22,7 @@ import {
   stateLabel,
   useToast,
 } from "../components/ui";
+import { DemoNota } from "../components/DemoNota";
 import { useCondominioOptions } from "./Condomini";
 import type { ConsumoDto, ConsumptionComparison, Paginated } from "@shared/api-types";
 import {
@@ -139,6 +140,8 @@ export function Consumi() {
           </Button>
         }
       />
+
+      <DemoNota>Letture e confronti sono di esempio: nella demo non si possono inserire letture. I confronti compaiono solo tra periodi omogenei.</DemoNota>
 
       <Banner tone="info" title="Origine del dato">
         <span>

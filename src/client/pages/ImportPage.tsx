@@ -18,6 +18,7 @@ import {
 } from "../components/ui";
 import type { ImportBatchDto, ImportPreview, ImportPreviewRow, Paginated } from "@shared/api-types";
 import { IMPORT_TIPI, importTipoLabels, type ImportTipo } from "@shared/constants";
+import { isDemo } from "../../demo";
 import { formatDateTime } from "@shared/format";
 
 type WizardStep = "scelta" | "anteprima" | "completato";
@@ -112,6 +113,13 @@ export function ImportPage() {
         title="Importazione dati"
         subtitle="CSV/XLSX con anteprima, validazione riga per riga e rilevamento dei possibili duplicati. Nessun file viene salvato nei log."
       />
+
+      {isDemo ? (
+        <Banner tone="warning" title="Importazione disattivata nella demo">
+          Qui sotto vedi il registro delle importazioni già effettuate e puoi scaricare i template. Il caricamento dei
+          file è spento: nessun file viene letto o inviato da questa pagina.
+        </Banner>
+      ) : null}
 
       <div className="steps">
         <div className={`step ${step === "scelta" ? "is-active" : "is-done"}`}>
